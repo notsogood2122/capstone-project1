@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin{
+  id Int @id @default(autoincrement())
+  username String
+}
+
+model Student{
+  id Int @id @default(autoincrement())
+  username String
+  address String
+  img String?
+  sex UserSex
+  createdAt DateTime @default(now())
+  parentId Int
+  parent Parent @relation(fields:[parentId], references: [id])
+  therapistId Int
+  therapist Therapist? @relation(fields: [therapistId], references: [id])
+  disabilities Disability[] @relation("StudentDisabilities")
+}
+
+model Therapist{
+  id Int @id @default(autoincrement())
+  username String
+  students  Student[]
+  email String? @unique
+  address String
+  phone String? @unique
+  img String?
+  sex UserSex
+  createdAt DateTime @default(now())
+}
+
+model Parent{
+  id Int @id @default(autoincrement())
+  username String
+  students Student[]
+  email String? @unique
+  address String
+  phone String @unique
+  img String?
+}
+
+model Schedule{
+  id Int @id @default(autoincrement())
+  date DateTime
+  day Day
+  startTime DateTime
+  endTime DateTime
+}
+
+model Announcement{
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  date DateTime
+}
+
+//model Messages{}
+
+model Events{
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  startTime DateTime
+  endTime DateTime
+}
+
+model Session{
+  id Int @id @default(autoincrement())
+  date DateTime
+  day Day
+  startTime DateTime
+  endTime DateTime
+}
+
+model Disability{
+  id Int @id @default(autoincrement())
+  name String
+  students Student[] @relation("StudentDisabilities")
+}
+
+enum UserSex{
+  MALE
+  FEMALE
+}
+
+enum Day{
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}

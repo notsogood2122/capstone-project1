@@ -2,45 +2,114 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { announcementsData, role } from "@/lib/data";
+import { role } from "@/lib/data";
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { ITEM_PER_PAGE } from "@/lib/settings";
+import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
+import Toolbar from "@/components/Toolbar";
+import SortButton from "@/components/SortButton";
+
+const announcementSelect = role === "admin"
+? {
+  id: true,
+  title: true,
+  description: true,
+  date: true,
+} :
+{
+  title: true,
+  description: true,
+  date: true,
+};
 
 type Announcement = {
   id: number;
   title: string;
-  class: string;
-  date: string;
+  description: string;
+  date: Date;
 };
 
-const columns = [
+const baseColumns = [
   {
-    header: "Title",
-    accessor: "title",
+    header: "Info",
+    accessor: "info",
   },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  { header: "Title", accessor: "title", className: "hidden lg:table-cell" },
+  { header: "Description", accessor: "description", className: "hidden lg:table-cell" },
+  { header: "Date", accessor: "date", className: "hidden lg:table-cell" },
 ];
 
-const AnnouncementListPage = () => {
+const columns =
+  role === "admin"
+    ? [
+        ...baseColumns,
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+    : [...baseColumns];
+
+const AnnouncementListPage = async ( {
+  searchParams
+}:{ 
+  searchParams: { [key: string]: string | undefined};
+}) => {
+
+  if (role !== "admin" && role !== "therapist" && role !== "parent") {
+    return <div className="text-red-500">Unauthorized access</div>;
+  }
+  
+    const { page, announcementId, search} = searchParams;
+      const sort = searchParams.sort;
+    
+    let orderBy: any = undefined;
+    
+    if (sort === "title_asc") orderBy = { title: "asc"};
+    else if (sort === "title_desc") orderBy = { title: "desc"};
+    else if (sort === "date_asc") orderBy = { date: "asc"};
+    else if (sort === "date_desc") orderBy = { date: "desc"};
+    
+      const p = page ? parseInt(page) : 1;
+    
+    
+       const whereClause = {
+        ...(announcementId && { id: parseInt(announcementId) }),
+        ...(search && {
+          OR: [
+            { title: { 
+              contains: search,
+               mode: "insensitive" as const,
+              },
+            },
+            { description: { 
+              contains: search,
+               mode: "insensitive" as const,
+              },
+            },
+          ],
+        }),
+      };
+    
+      const [data, count] = await prisma.$transaction([
+       prisma.announcement.findMany({
+        where: whereClause,
+        take: ITEM_PER_PAGE,
+        skip: ITEM_PER_PAGE * (p - 1),
+        orderBy,
+        select: announcementSelect,
+      }),
+       prisma.announcement.count({ where: whereClause}),
+      ]);
+
   const renderRow = (item: Announcement) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
       <td className="flex items-center gap-4 p-4">{item.title}</td>
-      <td>{item.class}</td>
-      <td className="hidden md:table-cell">{item.date}</td>
+      <td className="hidden md:table-cell">{new Date(item.date).toLocaleDateString()}</td>
       <td>
         <div className="flex items-center gap-2">
           {role === "admin" && (
@@ -62,24 +131,16 @@ const AnnouncementListPage = () => {
           All Announcements
         </h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
           <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {role === "admin" && (
-              <FormModal table="announcement" type="create" />
-            )}
+            <Toolbar role={role as "admin" | "therapist" | "parent"} table="therapist" />
+            <SortButton sortCycle={["title_asc", "title_desc", "date_asc", "date_desc"]}/>
           </div>
         </div>
       </div>
       {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={announcementsData} />
+      <Table columns={columns} renderRow={renderRow} data={data as Announcement[]} />
       {/* PAGINATION */}
-      <Pagination />
+      <Pagination page={p} count={count}/>
     </div>
   );
 };
