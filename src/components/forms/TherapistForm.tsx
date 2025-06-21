@@ -23,7 +23,7 @@ const schema = z.object({
 
 type Inputs = z.infer<typeof schema>;
 
-const StudentForm = ({
+const TherapistForm = ({
   type,
   data,
 }: {
@@ -56,22 +56,22 @@ const StudentForm = ({
     body.append("sex", formData.sex);
     if (formData.img?.[0]) body.append("img", formData.img[0]);
 
-    const res = await fetch("/api/students", {
+    const res = await fetch("/api/therapists", {
       method: "POST",
       body,
     });
 
     if (res.ok) {
-      alert("Student created successfully!");
+      alert("Therapist created successfully!");
     } else {
-      alert("Error creating student.");
+      alert("Error creating therapist.");
     }
   });
 
   return (
     <form className="flex flex-col gap-8" onSubmit={onSubmit}>
       <h1 className="text-xl font-semibold">
-        {type === "create" ? "Create a new student" : "Update student"}
+        {type === "create" ? "Create a new therapist" : "Update therapist"}
       </h1>
 
       <span className="text-xs text-gray-400 font-medium">Authentication Information</span>
@@ -112,4 +112,4 @@ const StudentForm = ({
   );
 };
 
-export default StudentForm;
+export default TherapistForm;

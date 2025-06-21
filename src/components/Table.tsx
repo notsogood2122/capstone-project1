@@ -8,16 +8,20 @@ const Table = ({
   data: any[];
 }) => {
   return (
-    <table className="w-full mt-4">
-      <thead>
-        <tr className="text-left text-gray-500 text-sm">
+    <div className="overflow-x-auto w-full">
+    <table className="min-w-full table-fixed text-sm text-left border-collapse">
+      <thead className="bg-gray-100">
+        <tr>
           {columns.map((col) => (
-            <th key={col.accessor} className={col.className}>{col.header}</th>
+            <th key={col.accessor} className={`px-4 py-2 text-gray-500 font-medium ${col.className ?? ""}`}>
+            {col.header}
+            </th>
           ))}
         </tr>
       </thead>
       <tbody>{data.map((item) => renderRow(item))}</tbody>
     </table>
+    </div>
   );
 };
 
