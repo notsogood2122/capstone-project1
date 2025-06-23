@@ -1,7 +1,17 @@
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalender";
 
-const TherapistPage = () => {
+export default async function TherapistPage() {
+  const user = await currentUser();
+  const role = user?.publicMetadata?.role;
+
+  if (role !== "therapist") {
+    redirect("/unauthorized");
+  }
+
   return (
     <div className="flex-1 p-4 flex gap-4 flex-col xl:flex-row">
       {/* LEFT */}
@@ -17,6 +27,4 @@ const TherapistPage = () => {
       </div>
     </div>
   );
-};
-
-export default TherapistPage;
+}

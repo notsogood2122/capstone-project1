@@ -63,24 +63,13 @@ const therapistColumns = [
   { header: "Disablity", accessor: "disabilities", className: "hidden lg:table-cell" },
 ];
 
-const columns = 
-
-role === "admin"
-? [
+const columns = [
   ...baseColumns,
-  ...adminColumns,
+  ...(role === "admin" ? adminColumns : role === "therapist" ? therapistColumns : []),
   {
     header: "Actions",
     accessor: "action",
-  }
-]
-: role === "therapist"
-? [
-  ...baseColumns,
-  ...therapistColumns,
-]
-: [
-  ...baseColumns,
+  },
 ];
 
 const renderRow = (item: SafeStudent) => (
@@ -90,7 +79,7 @@ const renderRow = (item: SafeStudent) => (
     >
       <td className="flex items-center gap-4 p-4 min-w-[200px]">
         <Image
-          src={item.img || "/avatar.png"}
+          src={item.img || "/noAvatar.png"}
           alt=""
           width={40}
           height={40}
@@ -120,22 +109,21 @@ const renderRow = (item: SafeStudent) => (
         )}
       </>
     )}
-    {role === "admin" && (
-       //<button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-       //<Image src="/delete.png" alt="" width={16} height={16} />
-       //</button>
-      <td className="px-4 py-2">
-        <div className="flex items-center gap-2">
-          <Link href={`/list/students/${item.id}`}>
-            <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
-              <Image src="/view.png" alt="" width={16} height={16} />
-            </button>
-          </Link>
-            <FormModal table="event" type="update" data={item} />
-            <FormModal table="event" type="delete" id={item.id} />
-        </div>
-      </td>
+    <td className="px-4 py-2">
+      <div className="flex items-center gap-2">
+        <Link href={`/list/students/${item.id}`}>
+          <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
+            <Image src="/view.png" alt="" width={16} height={16} />
+          </button>
+        </Link>
+      {role === "admin" && (
+        <>
+          <FormModal table="student" type="update" data={item} />
+          <FormModal table="student" type="delete" id={item.id} />
+        </>
       )}
+      </div>
+    </td>
     </tr>
   );
 
