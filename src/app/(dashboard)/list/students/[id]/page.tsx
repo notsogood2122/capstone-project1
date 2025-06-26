@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 
-const SingleStudentPage = async ({ params }: { params: { id: string } }) => {
+const SingleStudentPage = async ({ params }: { params: { id: number } }) => {
   const student = await prisma.student.findUnique({
     where: { id: params.id },
     include: {

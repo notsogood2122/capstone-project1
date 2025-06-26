@@ -54,17 +54,14 @@ const adminColumns = [
   { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
 ];
 
-const columns =
-  role === "admin"
-    ? [
-        ...baseColumns,
-        ...adminColumns,
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-    : [...baseColumns];
+const columns = [
+  ...baseColumns,
+  ...(role === "admin" ? adminColumns : []),
+  {
+    header: "Actions",
+    accessor: "action",
+  },
+];
 
   const renderRow = (item: SafeTherapist) => (
     <tr
@@ -73,7 +70,7 @@ const columns =
     >
       <td className="flex items-center gap-4 p-4 min-w-[200px]">
         <Image
-          src={item.img || "/avatar.png"}
+          src={item.img || "/noAvatar.png"}
           alt=""
           width={40}
           height={40}
@@ -91,7 +88,6 @@ const columns =
         <td className="hidden lg:table-cell px-4 py-2">{item.address}</td>
         </>
       )}
-      {role === "admin" && (
       <td className="px-4 py-2">
         <div className="flex items-center gap-2">
           <Link href={`/list/therapists/${item.id}`}>
@@ -100,17 +96,13 @@ const columns =
             </button>
           </Link>
           {role === "admin" && (
-            // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-            //   <Image src="/delete.png" alt="" width={16} height={16} />
-            // </button>
             <>
-              <FormModal table="event" type="update" data={item} />
-              <FormModal table="event" type="delete" id={item.id} />
+        <FormModal table="therapist" type="update" data={item} />
+        <FormModal table="therapist" type="delete" id={item.id} />
             </>
           )}
         </div>
       </td>
-      )}
     </tr>
   );
 
